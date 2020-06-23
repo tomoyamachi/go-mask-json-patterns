@@ -1,7 +1,7 @@
 package sensitive
 
 import (
-	"fmt"
+	"encoding/json"
 	"reflect"
 )
 
@@ -9,44 +9,36 @@ import (
 const tagName = "sensitive"
 
 type User struct {
-	Id    int    `sensitive:true`
-	Name  string `sensitive:false`
-	Email string `sensitive:false`
+	Id    int    `json:"id"`
+	Name  string `json:"name"`
+	Email string `sensitive:"true" json:"email"`
 }
 
-func Mask(obj interface{}) {
-	// TypeOf returns the reflection Type that represents the dynamic type of variable.
-	// If variable is a nil interface value, TypeOf returns nil.
-
-	t := reflect.TypeOf(obj)
-	// Get the type and kind of our user variable
-	fmt.Println("Type:", t.Name())
-	fmt.Println("Kind:", t.Kind())
-	// Iterate over all available fields and read the tag value
+func (u User) MarshalJSON() ([]byte, error) {
+	t := reflect.TypeOf(u)
+	sensitives := []string{}
 	for i := 0; i < t.NumField(); i++ {
-		// Get the field, returns https://golang.org/pkg/reflect/#StructField
 		field := t.Field(i)
-		// Get the field tag value
-		tag := field.Tag.Get(tagName)
-		fmt.Printf("%d. %v (%v), val: %s tag: '%v'\n", i+1, field.Name, field.Type.Name(), t.String(), tag)
+		// tag := field.Tag.Get(tagName)
+		// fmt.Printf("%d. %v (%v), val: %s tag: '%v'\n", i+1, field.Name, field.Type.Name(), t.String(), tag)
+		if field.Tag.Get(tagName) == "true" {
+			sensitives = append(sensitives, field.Name)
+		}
 	}
 
-	fmt.Println(obj)
-	mutable := reflect.ValueOf(&obj)
-	fmt.Println(mutable.Kind())
-	if mutable.Kind() == reflect.Ptr {
-
-		fmt.Println(mutable.Elem().Elem())
-		mutable.FieldByName("Normal")
-		// if f.Kind() == reflect.String {
-		// 	fmt.Println(f.CanSet())
-		// 	if f.CanSet() {
-		// 		f.SetString("update")
-		// 	}
-		// }
+	type alias User
+	au := alias(u)
+	mutable := reflect.ValueOf(&au)
+	for _, field := range sensitives {
+		f := mutable.Elem().FieldByName(field)
+		if f.CanSet() {
+			switch f.Kind() {
+			case reflect.String:
+				f.SetString("***")
+			case reflect.Int:
+				f.SetInt(99999)
+			}
+		}
 	}
-	fmt.Println(obj)
-	// f := mutable.FieldByName("Normal").Interface()
-	// fmt.Println(f)
-	// fmt.Println(obj)
+	return json.Marshal(au)
 }

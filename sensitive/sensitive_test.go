@@ -5,28 +5,24 @@ import (
 	"testing"
 )
 
-func TestMaskString(t *testing.T) {
-	type TestStruct struct {
-		Mask   string `sensitive:"true" json:"mask"`
-		Normal string `json:"normal" sensitive:"true"`
-	}
+func TestSensitive(t *testing.T) {
 
 	tests := []struct {
-		in     TestStruct
+		in     User
 		expect string
 		ok     bool
 	}{
 		{
-			in: TestStruct{
-				Mask:   "mask",
-				Normal: "normal",
+			in: User{
+				Id:    1,
+				Name:  "tomoya",
+				Email: "test.com",
 			},
-			expect: `{"mask":"***","normal":"nomask"}`,
+			expect: `{"id":1,"name":"tomoya","email":"***"}`,
 			ok:     true,
 		},
 	}
 	for i, tt := range tests {
-		Mask(tt.in)
 		b, err := json.Marshal(tt.in)
 		if ok := (err == nil); ok != tt.ok {
 			if err != nil {
@@ -35,8 +31,10 @@ func TestMaskString(t *testing.T) {
 				t.Errorf("test %d, unexpected success", i)
 			}
 		}
+
 		if got := string(b); got != tt.expect {
-			t.Errorf("test %d, Marshal(%#v) = %q, want %q", i, tt.in, got, tt.expect)
+			t.Errorf("test %d, Marshal(%#v) = %s, want %s", i, tt.in, got, tt.expect)
 		}
+
 	}
 }
