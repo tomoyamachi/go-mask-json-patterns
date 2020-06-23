@@ -2,6 +2,7 @@ package structtag
 
 import (
 	"encoding/json"
+	"fmt"
 	"reflect"
 )
 
@@ -14,7 +15,7 @@ type User struct {
 	Email string `sensitive:"true" json:"email"`
 }
 
-func (u User) MarshalJSON() ([]byte, error) {
+func (u User) mask() interface{} {
 	t := reflect.TypeOf(u)
 	sensitives := []string{}
 	for i := 0; i < t.NumField(); i++ {
@@ -40,5 +41,13 @@ func (u User) MarshalJSON() ([]byte, error) {
 			}
 		}
 	}
-	return json.Marshal(au)
+	return &au
+}
+
+func (u User) MarshalJSON() ([]byte, error) {
+	return json.Marshal(u.mask())
+}
+
+func (u User) String() string {
+	return fmt.Sprintf("%v", u.mask())
 }
