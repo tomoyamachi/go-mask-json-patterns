@@ -1,24 +1,27 @@
-package sensitive
+package originaltype
 
 import (
 	"encoding/json"
 	"testing"
 )
 
-func TestSensitive(t *testing.T) {
+func TestMaskString(t *testing.T) {
+	type TestStruct struct {
+		Mask   String `json:"Mask"`
+		Normal string `json:"Normal"`
+	}
 
 	tests := []struct {
-		in     User
+		in     TestStruct
 		expect string
 		ok     bool
 	}{
 		{
-			in: User{
-				Id:    1,
-				Name:  "tomoya",
-				Email: "test.com",
+			in: TestStruct{
+				Mask:   String("Mask"),
+				Normal: "nomask",
 			},
-			expect: `{"id":1,"name":"tomoya","email":"***"}`,
+			expect: `{"Mask":"***","Normal":"nomask"}`,
 			ok:     true,
 		},
 	}
@@ -31,10 +34,8 @@ func TestSensitive(t *testing.T) {
 				t.Errorf("test %d, unexpected success", i)
 			}
 		}
-
 		if got := string(b); got != tt.expect {
-			t.Errorf("test %d, Marshal(%#v) = %s, want %s", i, tt.in, got, tt.expect)
+			t.Errorf("test %d, Marshal(%#v) = %q, want %q", i, tt.in, got, tt.expect)
 		}
-
 	}
 }

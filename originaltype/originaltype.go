@@ -1,4 +1,4 @@
-package mask
+package originaltype
 
 type String string
 

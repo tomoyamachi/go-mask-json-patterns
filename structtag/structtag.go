@@ -1,4 +1,4 @@
-package sensitive
+package structtag
 
 import (
 	"encoding/json"

@@ -1,27 +1,24 @@
-package mask
+package structtag
 
 import (
 	"encoding/json"
 	"testing"
 )
 
-func TestMaskString(t *testing.T) {
-	type TestStruct struct {
-		Mask   String `json:"Mask"`
-		Normal string `json:"Normal"`
-	}
+func TestSensitive(t *testing.T) {
 
 	tests := []struct {
-		in     TestStruct
+		in     User
 		expect string
 		ok     bool
 	}{
 		{
-			in: TestStruct{
-				Mask:   String("Mask"),
-				Normal: "nomask",
+			in: User{
+				Id:    1,
+				Name:  "tomoya",
+				Email: "test.com",
 			},
-			expect: `{"Mask":"***","Normal":"nomask"}`,
+			expect: `{"id":1,"name":"tomoya","email":"***"}`,
 			ok:     true,
 		},
 	}
@@ -34,8 +31,10 @@ func TestMaskString(t *testing.T) {
 				t.Errorf("test %d, unexpected success", i)
 			}
 		}
+
 		if got := string(b); got != tt.expect {
-			t.Errorf("test %d, Marshal(%#v) = %q, want %q", i, tt.in, got, tt.expect)
+			t.Errorf("test %d, Marshal(%#v) = %s, want %s", i, tt.in, got, tt.expect)
 		}
+
 	}
 }
