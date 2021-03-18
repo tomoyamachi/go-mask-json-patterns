@@ -26,3 +26,10 @@ func (s Sample) MarshalJSON() ([]byte, error) {
 func (s Sample) String() string {
 	return fmt.Sprintf("%v", *s.mask())
 }
+
+const logRequestFormat = "request=%s"
+
+func ToString(o interface{}) string {
+	b, _ := json.Marshal(o)
+	return fmt.Sprintf(logRequestFormat, b)
+}
