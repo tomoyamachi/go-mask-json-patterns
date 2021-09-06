@@ -4,23 +4,31 @@ import "testing"
 
 func TestMaskString(t *testing.T) {
 	tests := []struct {
-		in      string
-		expect  string
-		wantErr error
+		maskKeys []string
+		in       string
+		expect   string
+		wantErr  error
 	}{
 		{
-			in:     `{"password":"test","user":"tomoyamachi"}`,
-			expect: `{"password":"***","user":"tomoyamachi"}`,
+			maskKeys: []string{"password"},
+			in:       `{"password":"test","user":"tomoyamachi"}`,
+			expect:   `{"password":"***","user":"tomoyamachi"}`,
 		},
 		{
-			in:     `{"authorize_key":"foobar", "password":"test", "user":"tomoyamachi"}`,
-			expect: `{"authorize_key":"***","password":"***","user":"tomoyamachi"}`,
+			maskKeys: []string{"password", "authorize_key"},
+			in:       `{"authorize_key":"foobar", "password":"test", "user":"tomoyamachi"}`,
+			expect:   `{"authorize_key":"***","password":"***","user":"tomoyamachi"}`,
+		},
+		{
+			maskKeys: []string{"password", "authorize_key", "nested/foo"},
+			in:       `{"authorize_key":"foobar", "password":"test", "user":"tomoyamachi", "nested": {"foo":123,"bar":456}}`,
+			expect:   `{"authorize_key":"***","nested":{"bar":456,"foo":"***"},"password":"***","user":"tomoyamachi"}`,
 		},
 	}
 	for i, tt := range tests {
-		got, _ := Log(tt.in)
+		got, _ := Log(tt.in, tt.maskKeys)
 		if got != tt.expect {
-			t.Errorf("test %d, input(%#v) = %q, want %q", i, tt.in, got, tt.expect)
+			t.Errorf("test %d, got %q, want %q", i, got, tt.expect)
 		}
 	}
 }
