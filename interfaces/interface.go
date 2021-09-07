@@ -11,7 +11,7 @@ func Log(s string, maskKeys []string) (string, error) {
 		return "", err
 	}
 	for _, key := range maskKeys {
-		checkContains(r, strings.Split(key, "/"))
+		mask(r, strings.Split(key, "/"))
 	}
 	output, err := json.Marshal(r)
 	if err != nil {
@@ -20,11 +20,11 @@ func Log(s string, maskKeys []string) (string, error) {
 	return string(output), nil
 }
 
-func checkContains(target map[string]interface{}, path []string) bool {
+func mask(target map[string]interface{}, path []string) bool {
 	if val, ok := target[path[0]]; ok {
 		if len(path) > 1 {
 			if v, ok := val.(map[string]interface{}); ok {
-				return checkContains(v, path[1:])
+				return mask(v, path[1:])
 			}
 		}
 		target[path[0]] = "***"
