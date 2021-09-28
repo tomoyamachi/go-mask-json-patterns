@@ -28,24 +28,37 @@ func maskResponse(v interface{}) map[string]interface{} {
 		ft := rt.Field(i)
 		r := ft.Tag.Get("log")
 		jsonTag := ft.Name
+		tagOptions := tagOptions("")
+
 		if jt := ft.Tag.Get("json"); jt != "" {
-			jsonTag = jt
+			jsonTag, tagOptions = parseTag(jt)
 		}
+
+		if ft.Type.Kind() == reflect.Ptr && rv.Field(i).IsNil() {
+			continue
+		}
+		fv := rv.Field(i)
 
 		// only check log struct tag contains any characters
 		if r != "" {
 			// set a sensitive character even if the field is struct
+			if tagOptions.Contains("omitempty") && isEmptyValue(fv) {
+				continue
+			}
 			result[jsonTag] = mask
 			continue
 		}
 
 		switch ft.Type.Kind() {
 		case reflect.Ptr:
-			result[jsonTag] = maskResponse(rv.Field(i).Interface())
+			result[jsonTag] = maskResponse(fv.Interface())
 		case reflect.Struct:
-			result[jsonTag] = maskResponse(rv.Field(i).Interface())
+			result[jsonTag] = maskResponse(fv.Interface())
 		default:
-			result[jsonTag] = rv.Field(i).Interface()
+			if tagOptions.Contains("omitempty") && isEmptyValue(fv) {
+				continue
+			}
+			result[jsonTag] = fv.Interface()
 		}
 	}
 	return result
@@ -84,6 +97,24 @@ func (o tagOptions) Contains(optionName string) bool {
 			return true
 		}
 		s = next
+	}
+	return false
+}
+
+func isEmptyValue(v reflect.Value) bool {
+	switch v.Kind() {
+	case reflect.Array, reflect.Map, reflect.Slice, reflect.String:
+		return v.Len() == 0
+	case reflect.Bool:
+		return !v.Bool()
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return v.Int() == 0
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+		return v.Uint() == 0
+	case reflect.Float32, reflect.Float64:
+		return v.Float() == 0
+	case reflect.Interface, reflect.Ptr:
+		return v.IsNil()
 	}
 	return false
 }

@@ -7,23 +7,23 @@ import (
 )
 
 type MaskResponse struct {
-	Str               string            `json:"str"`
-	MaskStr           string            `json:"mstr" log:"-"`
-	Int               int               `json:"int"`
-	MaskInt           int               `json:"mint" log:"-"`
-	Slice             []string          `json:"slice""`
-	MaskSlice         []string          `json:"mslice" log:"-"`
-	Map               map[string]string `json:"map"`
-	MaskMap           map[string]string `json:"mmap" log:"-"`
-	Struct            SubMask           `json:"struct"`
-	MaskStruct        SubMask           `json:"mstruct" log:"-"`
-	PointerStruct     *SubMask          `json:"pstruct"`
-	MaskPointerStruct *SubMask          `json:"mpstruct" log:"-"`
+	Str               string            `json:"str,omitempty"`
+	MaskStr           string            `json:"mstr,omitempty" log:"-"`
+	Int               int               `json:"int,omitempty"`
+	MaskInt           int               `json:"mint,omitempty" log:"-"`
+	Slice             []string          `json:"slice,omitempty"`
+	MaskSlice         []string          `json:"mslice,omitempty" log:"-"`
+	Map               map[string]string `json:"map,omitempty"`
+	MaskMap           map[string]string `json:"mmap,omitempty" log:"-"`
+	Struct            SubMask           `json:"struct,omitempty"`
+	MaskStruct        SubMask           `json:"mstruct,omitempty" log:"-"`
+	PointerStruct     *SubMask          `json:"pstruct,omitempty"`
+	MaskPointerStruct *SubMask          `json:"mpstruct,omitempty" log:"-"`
 }
 
 type SubMask struct {
-	Str     string `json:"str"`
-	MaskStr string `json:"mstr" log:"-"`
+	Str     string `json:"str,omitempty"`
+	MaskStr string `json:"mstr,omitempty" log:"-"`
 }
 
 func initMask() MaskResponse {
@@ -175,6 +175,12 @@ func TestMask(t *testing.T) {
   }
 }`,
 		},
+		{
+			in:         MaskResponse{},
+			ok:         true,
+			expectLog:  `{"struct":{},"mstruct":"*"}`,
+			expectJson: `{"struct":{},"mstruct":{}}`,
+		},
 	}
 	for i, tt := range tests {
 		b, err := Log(tt.in)
@@ -209,7 +215,7 @@ func TestMask(t *testing.T) {
 				t.Errorf("test %d, unexpected error with compare log output", i)
 			}
 			if !ok {
-				t.Errorf("test %d, Marshal(%#v) = %s, want %s", i, tt.in, string(b), tt.expectLog)
+				t.Errorf("test %d, Marshal(%#v) = %s, want %s", i, tt.in, string(got), tt.expectJson)
 			}
 		}
 
