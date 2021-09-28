@@ -1,4 +1,4 @@
-package structtag
+package structtag_alias
 
 import (
 	"encoding/json"

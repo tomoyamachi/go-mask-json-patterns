@@ -1,7 +1,8 @@
-package structtag
+package structtag_alias
 
 import (
 	"encoding/json"
+	"github.com/tomoyamachi/logmask-patterns/util"
 	"testing"
 )
 
@@ -31,10 +32,12 @@ func TestSensitive(t *testing.T) {
 				t.Errorf("test %d, unexpected success", i)
 			}
 		}
-
-		if got := string(b); got != tt.expect {
-			t.Errorf("test %d, Marshal(%#v) = %s, want %s", i, tt.in, got, tt.expect)
+		ok, err := util.CompareJsonBytes(b, []byte(tt.expect))
+		if err != nil {
+			t.Errorf("test %d, unexpected error with compare log output", i)
 		}
-
+		if !ok {
+			t.Errorf("test %d, Marshal(%#v) = %s, want %s", i, tt.in, string(b), tt.expect)
+		}
 	}
 }
