@@ -15,11 +15,18 @@ func MakeMaskedStruct(v interface{}) map[string]interface{} {
 	rt := reflect.TypeOf(v)
 	var rv reflect.Value
 	result := map[string]interface{}{}
-	if rt.Kind() == reflect.Ptr {
+	switch rt.Kind() {
+	case reflect.Struct:
+		rv = reflect.ValueOf(&v).Elem().Elem()
+	case reflect.Ptr:
 		rv = reflect.ValueOf(v).Elem()
 		rt = rt.Elem()
-	} else {
-		rv = reflect.ValueOf(&v).Elem().Elem()
+	default:
+	}
+
+	if rt.Kind() != reflect.Struct {
+		result["msg"] = v
+		return result
 	}
 
 	for i := 0; i < rt.NumField(); i++ {

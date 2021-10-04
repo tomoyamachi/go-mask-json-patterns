@@ -61,6 +61,7 @@ func initMaskPtr() *MaskResponse {
 }
 
 func TestMask(t *testing.T) {
+	pointerStr := "pointer str"
 	tests := []struct {
 		in         interface{}
 		ok         bool
@@ -180,6 +181,18 @@ func TestMask(t *testing.T) {
 			ok:         true,
 			expectLog:  `{"struct":{},"mstruct":"*"}`,
 			expectJson: `{"struct":{},"mstruct":{}}`,
+		},
+		{
+			in:         "normal str",
+			ok:         true,
+			expectLog:  `{"msg":"normal str"}`,
+			expectJson: `"normal str"`,
+		},
+		{
+			in:         &pointerStr,
+			ok:         true,
+			expectLog:  `{"msg":"pointer str"}`,
+			expectJson: `"pointer str"`,
 		},
 	}
 	for i, tt := range tests {
