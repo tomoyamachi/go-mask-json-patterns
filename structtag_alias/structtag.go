@@ -3,6 +3,7 @@ package structtag_alias
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/tomoyamachi/go-mask-json-patterns/util"
 	"reflect"
 )
 
@@ -35,7 +36,7 @@ func (u User) mask() interface{} {
 		if f.CanSet() {
 			switch f.Kind() {
 			case reflect.String:
-				f.SetString("***")
+				f.SetString(util.Masked)
 			case reflect.Int:
 				f.SetInt(99999)
 			}

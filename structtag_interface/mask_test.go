@@ -2,7 +2,7 @@ package structtag_interface
 
 import (
 	"encoding/json"
-	"github.com/tomoyamachi/logmask-patterns/util"
+	"github.com/tomoyamachi/go-mask-json-patterns/util"
 	"testing"
 )
 

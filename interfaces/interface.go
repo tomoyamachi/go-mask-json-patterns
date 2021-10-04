@@ -2,6 +2,7 @@ package interfaces
 
 import (
 	"encoding/json"
+	"github.com/tomoyamachi/go-mask-json-patterns/util"
 	"strings"
 )
 
@@ -27,7 +28,7 @@ func mask(target map[string]interface{}, path []string) bool {
 				return mask(v, path[1:])
 			}
 		}
-		target[path[0]] = "***"
+		target[path[0]] = util.Masked
 		return true
 	}
 	return false
