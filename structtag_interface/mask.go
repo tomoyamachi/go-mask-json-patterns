@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"reflect"
 	"strings"
+	"time"
+	"unicode"
 )
 
 func Log(v interface{}) ([]byte, error) {
@@ -21,16 +23,22 @@ func MakeMaskedStruct(v interface{}) map[string]interface{} {
 	case reflect.Ptr:
 		rv = reflect.ValueOf(v).Elem()
 		rt = rt.Elem()
-	default:
 	}
 
 	if rt.Kind() != reflect.Struct {
 		result["msg"] = v
 		return result
+	} else if v := checkSpecialStruct(rv); v != nil {
+		// special struct set original value
+		result["v"] = v
+		return result
 	}
 
 	for i := 0; i < rt.NumField(); i++ {
 		ft := rt.Field(i)
+		if isPrivateField(ft.Name) {
+			continue
+		}
 		maskStr := ft.Tag.Get("log")
 		jsonTag := ft.Name
 		tagOptions := tagOptions("")
@@ -67,6 +75,24 @@ func MakeMaskedStruct(v interface{}) map[string]interface{} {
 		}
 	}
 	return result
+}
+
+func isPrivateField(s string) bool {
+	// check first char
+	for _, c := range s {
+		return !unicode.IsUpper(c)
+	}
+	return true
+}
+
+// return native struct directory
+func checkSpecialStruct(rv reflect.Value) interface{} {
+	fieldValue := rv.Interface()
+	switch fieldValue.(type) {
+	case time.Time:
+		return fieldValue
+	}
+	return nil
 }
 
 // Copy from https://github.com/golang/go/blob/master/src/encoding/json/tags.go

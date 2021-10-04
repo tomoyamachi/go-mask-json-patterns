@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/tomoyamachi/go-mask-json-patterns/util"
 	"testing"
+	"time"
 )
 
 type MaskResponse struct {
@@ -19,12 +20,18 @@ type MaskResponse struct {
 	MaskStruct        SubMask           `json:"mstruct,omitempty" log:"*"`
 	PointerStruct     *SubMask          `json:"pstruct,omitempty"`
 	MaskPointerStruct *SubMask          `json:"mpstruct,omitempty" log:"*"`
+	Time              time.Time         `json:"time,omitempty"`
+	MaskTime          time.Time         `json:"mtime,omitempty" log:"*"`
+	PointerTime       *time.Time        `json:"ptime,omitempty"`
+	MaskPointerTime   *time.Time        `json:"mptime,omitempty" log:"*"`
 }
 
 type SubMask struct {
 	Str     string `json:"str,omitempty"`
 	MaskStr string `json:"mstr,omitempty" log:"*"`
 }
+
+var dummyTime = time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
 
 func initMask() MaskResponse {
 	return MaskResponse{
@@ -52,6 +59,10 @@ func initMask() MaskResponse {
 			Str:     "a",
 			MaskStr: "a",
 		},
+		Time:            dummyTime,
+		MaskTime:        dummyTime,
+		PointerTime:     &dummyTime,
+		MaskPointerTime: &dummyTime,
 	}
 }
 
@@ -93,7 +104,11 @@ func TestMask(t *testing.T) {
     "mstr": "*",
     "str": "a"
   },
-  "mpstruct": "*"
+  "mpstruct": "*",
+  "time":{"v":"2000-01-01T00:00:00Z"},
+  "mtime":"*",
+  "ptime":{"v":"2000-01-01T00:00:00Z"},
+  "mptime":"*"
 }`,
 			expectJson: `{
   "str": "a",
@@ -119,7 +134,11 @@ func TestMask(t *testing.T) {
   "mpstruct": {
     "mstr": "a",
     "str": "a"
-  }
+  },
+  "time":"2000-01-01T00:00:00Z",
+  "mtime":"2000-01-01T00:00:00Z",
+  "ptime":"2000-01-01T00:00:00Z",
+  "mptime":"2000-01-01T00:00:00Z"
 }`,
 		},
 		{
@@ -147,7 +166,11 @@ func TestMask(t *testing.T) {
     "mstr": "*",
     "str": "a"
   },
-  "mpstruct": "*"
+  "mpstruct": "*",
+  "time":{"v":"2000-01-01T00:00:00Z"},
+  "mtime":"*",
+  "ptime":{"v":"2000-01-01T00:00:00Z"},
+  "mptime":"*"
 }`,
 			expectJson: `{
   "str": "a",
@@ -173,14 +196,12 @@ func TestMask(t *testing.T) {
   "mpstruct": {
     "mstr": "a",
     "str": "a"
-  }
+  },
+  "time":"2000-01-01T00:00:00Z",
+  "mtime":"2000-01-01T00:00:00Z",
+  "ptime":"2000-01-01T00:00:00Z",
+  "mptime":"2000-01-01T00:00:00Z"
 }`,
-		},
-		{
-			in:         MaskResponse{},
-			ok:         true,
-			expectLog:  `{"struct":{},"mstruct":"*"}`,
-			expectJson: `{"struct":{},"mstruct":{}}`,
 		},
 		{
 			in:         "normal str",
