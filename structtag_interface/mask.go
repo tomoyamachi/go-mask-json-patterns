@@ -6,8 +6,6 @@ import (
 	"strings"
 )
 
-const mask = "*"
-
 func Log(v interface{}) ([]byte, error) {
 	r := maskResponse(v)
 	return json.Marshal(r)
@@ -26,7 +24,7 @@ func maskResponse(v interface{}) map[string]interface{} {
 
 	for i := 0; i < rt.NumField(); i++ {
 		ft := rt.Field(i)
-		r := ft.Tag.Get("log")
+		maskStr := ft.Tag.Get("log")
 		jsonTag := ft.Name
 		tagOptions := tagOptions("")
 
@@ -40,12 +38,12 @@ func maskResponse(v interface{}) map[string]interface{} {
 		fv := rv.Field(i)
 
 		// only check log struct tag contains any characters
-		if r != "" {
+		if maskStr != "" {
 			// set a sensitive character even if the field is struct
 			if tagOptions.Contains("omitempty") && isEmptyValue(fv) {
 				continue
 			}
-			result[jsonTag] = mask
+			result[jsonTag] = maskStr
 			continue
 		}
 
