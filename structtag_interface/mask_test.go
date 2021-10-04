@@ -2,28 +2,28 @@ package structtag_interface
 
 import (
 	"encoding/json"
-	"github.com/tomoyamachi/logmask-patterns/util"
+	"github.com/tomoyamachi/go-mask-json-patterns/util"
 	"testing"
 )
 
 type MaskResponse struct {
 	Str               string            `json:"str,omitempty"`
-	MaskStr           string            `json:"mstr,omitempty" log:"-"`
+	MaskStr           string            `json:"mstr,omitempty" log:"*"`
 	Int               int               `json:"int,omitempty"`
-	MaskInt           int               `json:"mint,omitempty" log:"-"`
+	MaskInt           int               `json:"mint,omitempty" log:"*"`
 	Slice             []string          `json:"slice,omitempty"`
-	MaskSlice         []string          `json:"mslice,omitempty" log:"-"`
+	MaskSlice         []string          `json:"mslice,omitempty" log:"*"`
 	Map               map[string]string `json:"map,omitempty"`
-	MaskMap           map[string]string `json:"mmap,omitempty" log:"-"`
+	MaskMap           map[string]string `json:"mmap,omitempty" log:"*"`
 	Struct            SubMask           `json:"struct,omitempty"`
-	MaskStruct        SubMask           `json:"mstruct,omitempty" log:"-"`
+	MaskStruct        SubMask           `json:"mstruct,omitempty" log:"*"`
 	PointerStruct     *SubMask          `json:"pstruct,omitempty"`
-	MaskPointerStruct *SubMask          `json:"mpstruct,omitempty" log:"-"`
+	MaskPointerStruct *SubMask          `json:"mpstruct,omitempty" log:"*"`
 }
 
 type SubMask struct {
 	Str     string `json:"str,omitempty"`
-	MaskStr string `json:"mstr,omitempty" log:"-"`
+	MaskStr string `json:"mstr,omitempty" log:"*"`
 }
 
 func initMask() MaskResponse {

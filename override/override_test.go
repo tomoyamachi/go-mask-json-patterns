@@ -2,6 +2,7 @@ package override
 
 import (
 	"encoding/json"
+	"github.com/tomoyamachi/go-mask-json-patterns/util"
 	"reflect"
 	"testing"
 )
@@ -51,55 +52,14 @@ func TestSample(t *testing.T) {
 				t.Errorf("test %d, unexpected success", i)
 			}
 		}
-		if got := string(b); got != tt.expect {
-			t.Errorf("test %d, Marshal(%#v) = %q, want %q", i, tt.in, got, tt.expect)
+		ok, err := util.CompareJsonBytes(b, []byte(tt.expect))
+		if err != nil {
+			t.Errorf("test %d, unexpected error with compare log output", i)
 		}
-		if !reflect.DeepEqual(tt.in, tt.spare) {
-			t.Errorf("test %d, Override original structure", i)
+		if !ok {
+			t.Errorf("test %d, Marshal(%#v) = %s, want %s", i, tt.in, string(b), tt.expect)
 		}
-	}
-}
-
-func TestSampleToString(t *testing.T) {
-	tests := []struct {
-		in     interface{}
-		spare  interface{}
-		expect string
-		ok     bool
-	}{
-		{
-			in: Sample{
-				A: "a",
-				B: "b",
-				C: "c",
-			},
-			spare: Sample{
-				A: "a",
-				B: "b",
-				C: "c",
-			},
-			expect: `request={"a":"a","b":"***","c":"c"}`,
-			ok:     true,
-		},
-		{
-			in: &Sample{
-				A: "a",
-				B: "b",
-				C: "c",
-			},
-			spare: &Sample{
-				A: "a",
-				B: "b",
-				C: "c",
-			},
-			expect: `request={"a":"a","b":"***","c":"c"}`,
-			ok:     true,
-		},
-	}
-	for i, tt := range tests {
-		if got := ToString(tt.in); got != tt.expect {
-			t.Errorf("test %d, Marshal(%#v) = %q, want %q", i, tt.in, got, tt.expect)
-		}
+		// check original value does not change
 		if !reflect.DeepEqual(tt.in, tt.spare) {
 			t.Errorf("test %d, Override original structure", i)
 		}

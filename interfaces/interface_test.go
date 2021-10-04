@@ -1,6 +1,9 @@
 package interfaces
 
-import "testing"
+import (
+	"github.com/tomoyamachi/go-mask-json-patterns/util"
+	"testing"
+)
 
 func TestMaskString(t *testing.T) {
 	tests := []struct {
@@ -27,8 +30,12 @@ func TestMaskString(t *testing.T) {
 	}
 	for i, tt := range tests {
 		got, _ := Log(tt.in, tt.maskKeys)
-		if got != tt.expect {
-			t.Errorf("test %d, got %q, want %q", i, got, tt.expect)
+		ok, err := util.CompareJsonBytes([]byte(got), []byte(tt.expect))
+		if err != nil {
+			t.Errorf("test %d, unexpected error with compare log output", i)
+		}
+		if !ok {
+			t.Errorf("test %d, Marshal(%#v) = %s, want %s", i, tt.in, string(got), tt.expect)
 		}
 	}
 }
