@@ -215,6 +215,12 @@ func TestMask(t *testing.T) {
 			expectLog:  `{"msg":"pointer str"}`,
 			expectJson: `"pointer str"`,
 		},
+		{
+			in:         nil,
+			ok:         true,
+			expectLog:  `null`,
+			expectJson: `null`,
+		},
 	}
 	for i, tt := range tests {
 		b, err := Log(tt.in)

@@ -14,6 +14,9 @@ func Log(v interface{}) ([]byte, error) {
 }
 
 func MakeMaskedStruct(v interface{}) map[string]interface{} {
+	if v == nil {
+		return nil
+	}
 	rt := reflect.TypeOf(v)
 	var rv reflect.Value
 	result := map[string]interface{}{}
