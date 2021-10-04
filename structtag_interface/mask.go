@@ -7,11 +7,11 @@ import (
 )
 
 func Log(v interface{}) ([]byte, error) {
-	r := maskResponse(v)
+	r := MakeMaskedStruct(v)
 	return json.Marshal(r)
 }
 
-func maskResponse(v interface{}) map[string]interface{} {
+func MakeMaskedStruct(v interface{}) map[string]interface{} {
 	rt := reflect.TypeOf(v)
 	var rv reflect.Value
 	result := map[string]interface{}{}
@@ -49,9 +49,9 @@ func maskResponse(v interface{}) map[string]interface{} {
 
 		switch ft.Type.Kind() {
 		case reflect.Ptr:
-			result[jsonTag] = maskResponse(fv.Interface())
+			result[jsonTag] = MakeMaskedStruct(fv.Interface())
 		case reflect.Struct:
-			result[jsonTag] = maskResponse(fv.Interface())
+			result[jsonTag] = MakeMaskedStruct(fv.Interface())
 		default:
 			if tagOptions.Contains("omitempty") && isEmptyValue(fv) {
 				continue
