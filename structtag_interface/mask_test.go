@@ -8,22 +8,26 @@ import (
 )
 
 type MaskResponse struct {
-	Str               string            `json:"str,omitempty"`
-	MaskStr           string            `json:"mstr,omitempty" log:"*"`
-	Int               int               `json:"int,omitempty"`
-	MaskInt           int               `json:"mint,omitempty" log:"*"`
-	Slice             []string          `json:"slice,omitempty"`
-	MaskSlice         []string          `json:"mslice,omitempty" log:"*"`
-	Map               map[string]string `json:"map,omitempty"`
-	MaskMap           map[string]string `json:"mmap,omitempty" log:"*"`
-	Struct            SubMask           `json:"struct,omitempty"`
-	MaskStruct        SubMask           `json:"mstruct,omitempty" log:"*"`
-	PointerStruct     *SubMask          `json:"pstruct,omitempty"`
-	MaskPointerStruct *SubMask          `json:"mpstruct,omitempty" log:"*"`
-	Time              time.Time         `json:"time,omitempty"`
-	MaskTime          time.Time         `json:"mtime,omitempty" log:"*"`
-	PointerTime       *time.Time        `json:"ptime,omitempty"`
-	MaskPointerTime   *time.Time        `json:"mptime,omitempty" log:"*"`
+	Str                 string            `json:"str,omitempty"`
+	MaskStr             string            `json:"mstr,omitempty" log:"*"`
+	Int                 int               `json:"int,omitempty"`
+	MaskInt             int               `json:"mint,omitempty" log:"*"`
+	Slice               []string          `json:"slice,omitempty"`
+	MaskSlice           []string          `json:"mslice,omitempty" log:"*"`
+	Map                 map[string]string `json:"map,omitempty"`
+	MaskMap             map[string]string `json:"mmap,omitempty" log:"*"`
+	Struct              SubMask           `json:"struct,omitempty"`
+	MaskStruct          SubMask           `json:"mstruct,omitempty" log:"*"`
+	PointerStruct       *SubMask          `json:"pstruct,omitempty"`
+	MaskPointerStruct   *SubMask          `json:"mpstruct,omitempty" log:"*"`
+	Time                time.Time         `json:"time,omitempty"`
+	MaskTime            time.Time         `json:"mtime,omitempty" log:"*"`
+	PointerTime         *time.Time        `json:"ptime,omitempty"`
+	MaskPointerTime     *time.Time        `json:"mptime,omitempty" log:"*"`
+	SubMasks            []SubMask         `json:"structs,omitempty"`
+	MaskSubMasks        []SubMask         `json:"mstructs,omitempty" log:"*"`
+	PointerSubMasks     []*SubMask        `json:"pstructs,omitempty"`
+	MaskPointerSubMasks []*SubMask        `json:"mpstructs,omitempty" log:"*"`
 }
 
 type SubMask struct {
@@ -63,6 +67,22 @@ func initMask() MaskResponse {
 		MaskTime:        dummyTime,
 		PointerTime:     &dummyTime,
 		MaskPointerTime: &dummyTime,
+		SubMasks: []SubMask{
+			{Str: "a", MaskStr: "a"},
+			{Str: "b", MaskStr: "b"},
+		},
+		MaskSubMasks: []SubMask{
+			{Str: "a", MaskStr: "a"},
+			{Str: "b", MaskStr: "b"},
+		},
+		PointerSubMasks: []*SubMask{
+			{Str: "a", MaskStr: "a"},
+			{Str: "b", MaskStr: "b"},
+		},
+		MaskPointerSubMasks: []*SubMask{
+			{Str: "a", MaskStr: "a"},
+			{Str: "b", MaskStr: "b"},
+		},
 	}
 }
 
@@ -108,7 +128,11 @@ func TestMask(t *testing.T) {
   "time":{"v":"2000-01-01T00:00:00Z"},
   "mtime":"*",
   "ptime":{"v":"2000-01-01T00:00:00Z"},
-  "mptime":"*"
+  "mptime":"*",
+  "structs": [{"mstr": "*","str": "a"},{"mstr": "*","str": "b"}],
+  "mstructs": "*",
+  "pstructs": [{"mstr": "*","str": "a"},{"mstr": "*","str": "b"}],
+  "mpstructs": "*"
 }`,
 			expectJson: `{
   "str": "a",
@@ -138,7 +162,11 @@ func TestMask(t *testing.T) {
   "time":"2000-01-01T00:00:00Z",
   "mtime":"2000-01-01T00:00:00Z",
   "ptime":"2000-01-01T00:00:00Z",
-  "mptime":"2000-01-01T00:00:00Z"
+  "mptime":"2000-01-01T00:00:00Z",
+  "structs": [{"mstr": "a","str": "a"},{"mstr": "b","str": "b"}],
+  "mstructs": [{"mstr": "a","str": "a"},{"mstr": "b","str": "b"}],
+  "pstructs": [{"mstr": "a","str": "a"},{"mstr": "b","str": "b"}],
+  "mpstructs": [{"mstr": "a","str": "a"},{"mstr": "b","str": "b"}]
 }`,
 		},
 		{
@@ -170,7 +198,11 @@ func TestMask(t *testing.T) {
   "time":{"v":"2000-01-01T00:00:00Z"},
   "mtime":"*",
   "ptime":{"v":"2000-01-01T00:00:00Z"},
-  "mptime":"*"
+  "mptime":"*",
+  "structs": [{"mstr": "*","str": "a"},{"mstr": "*","str": "b"}],
+  "mstructs": "*",
+  "pstructs": [{"mstr": "*","str": "a"},{"mstr": "*","str": "b"}],
+  "mpstructs": "*"
 }`,
 			expectJson: `{
   "str": "a",
@@ -200,7 +232,11 @@ func TestMask(t *testing.T) {
   "time":"2000-01-01T00:00:00Z",
   "mtime":"2000-01-01T00:00:00Z",
   "ptime":"2000-01-01T00:00:00Z",
-  "mptime":"2000-01-01T00:00:00Z"
+  "mptime":"2000-01-01T00:00:00Z",
+  "structs": [{"mstr": "a","str": "a"},{"mstr": "b","str": "b"}],
+  "mstructs": [{"mstr": "a","str": "a"},{"mstr": "b","str": "b"}],
+  "pstructs": [{"mstr": "a","str": "a"},{"mstr": "b","str": "b"}],
+  "mpstructs": [{"mstr": "a","str": "a"},{"mstr": "b","str": "b"}]
 }`,
 		},
 		{
