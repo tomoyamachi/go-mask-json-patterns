@@ -43,8 +43,8 @@ func initMask() MaskResponse {
 		MaskStr:   "a",
 		Int:       100,
 		MaskInt:   100,
-		Slice:     []string{"a"},
-		MaskSlice: []string{"a"},
+		Slice:     []string{"a", "b"},
+		MaskSlice: []string{"a", "b"},
 		Map:       map[string]string{"a": "b"},
 		MaskMap:   map[string]string{"a": "b"},
 		Struct: SubMask{
@@ -86,6 +86,72 @@ func initMask() MaskResponse {
 	}
 }
 
+var expectMaskedStringInitMask = `{
+  "str": "a",
+  "mstr": "*",
+  "int": 100,
+  "mint": "*",
+  "slice": ["a", "b"],
+  "mslice": "*",
+  "map": {
+    "a": "b"
+  },
+  "mmap": "*",
+  "struct": {
+    "mstr": "*",
+    "str": "a"
+  },
+  "mstruct": "*",
+  "pstruct": {
+    "mstr": "*",
+    "str": "a"
+  },
+  "mpstruct": "*",
+  "time":{"v":"2000-01-01T00:00:00Z"},
+  "mtime":"*",
+  "ptime":{"v":"2000-01-01T00:00:00Z"},
+  "mptime":"*",
+  "structs": [{"mstr": "*","str": "a"},{"mstr": "*","str": "b"}],
+  "mstructs": "*",
+  "pstructs": [{"mstr": "*","str": "a"},{"mstr": "*","str": "b"}],
+  "mpstructs": "*"
+}`
+
+var expectStringInitMask = `{
+  "str": "a",
+  "mstr": "a",
+  "int": 100,
+  "mint": 100,
+  "slice": ["a","b"],
+  "mslice": ["a","b"],
+  "map": {"a": "b"},
+  "mmap": {"a": "b"},
+  "struct": {
+    "mstr": "a",
+    "str": "a"
+  },
+  "mstruct": {
+    "mstr": "a",
+    "str": "a"
+  },
+  "pstruct": {
+    "mstr": "a",
+    "str": "a"
+  },
+  "mpstruct": {
+    "mstr": "a",
+    "str": "a"
+  },
+  "time":"2000-01-01T00:00:00Z",
+  "mtime":"2000-01-01T00:00:00Z",
+  "ptime":"2000-01-01T00:00:00Z",
+  "mptime":"2000-01-01T00:00:00Z",
+  "structs": [{"mstr": "a","str": "a"},{"mstr": "b","str": "b"}],
+  "mstructs": [{"mstr": "a","str": "a"},{"mstr": "b","str": "b"}],
+  "pstructs": [{"mstr": "a","str": "a"},{"mstr": "b","str": "b"}],
+  "mpstructs": [{"mstr": "a","str": "a"},{"mstr": "b","str": "b"}]
+}`
+
 func initMaskPtr() *MaskResponse {
 	m := initMask()
 	return &m
@@ -102,142 +168,14 @@ func TestMask(t *testing.T) {
 		{
 			in: initMask(),
 			ok: true,
-			expectLog: `{
-  "str": "a",
-  "mstr": "*",
-  "int": 100,
-  "mint": "*",
-  "slice": [
-    "a"
-  ],
-  "mslice": "*",
-  "map": {
-    "a": "b"
-  },
-  "mmap": "*",
-  "struct": {
-    "mstr": "*",
-    "str": "a"
-  },
-  "mstruct": "*",
-  "pstruct": {
-    "mstr": "*",
-    "str": "a"
-  },
-  "mpstruct": "*",
-  "time":{"v":"2000-01-01T00:00:00Z"},
-  "mtime":"*",
-  "ptime":{"v":"2000-01-01T00:00:00Z"},
-  "mptime":"*",
-  "structs": [{"mstr": "*","str": "a"},{"mstr": "*","str": "b"}],
-  "mstructs": "*",
-  "pstructs": [{"mstr": "*","str": "a"},{"mstr": "*","str": "b"}],
-  "mpstructs": "*"
-}`,
-			expectJson: `{
-  "str": "a",
-  "mstr": "a",
-  "int": 100,
-  "mint": 100,
-  "slice": ["a"],
-  "mslice": ["a"],
-  "map": {"a": "b"},
-  "mmap": {"a": "b"},
-  "struct": {
-    "mstr": "a",
-    "str": "a"
-  },
-  "mstruct": {
-    "mstr": "a",
-    "str": "a"
-  },
-  "pstruct": {
-    "mstr": "a",
-    "str": "a"
-  },
-  "mpstruct": {
-    "mstr": "a",
-    "str": "a"
-  },
-  "time":"2000-01-01T00:00:00Z",
-  "mtime":"2000-01-01T00:00:00Z",
-  "ptime":"2000-01-01T00:00:00Z",
-  "mptime":"2000-01-01T00:00:00Z",
-  "structs": [{"mstr": "a","str": "a"},{"mstr": "b","str": "b"}],
-  "mstructs": [{"mstr": "a","str": "a"},{"mstr": "b","str": "b"}],
-  "pstructs": [{"mstr": "a","str": "a"},{"mstr": "b","str": "b"}],
-  "mpstructs": [{"mstr": "a","str": "a"},{"mstr": "b","str": "b"}]
-}`,
+			expectLog: expectMaskedStringInitMask,
+			expectJson: expectStringInitMask,
 		},
 		{
 			in: initMaskPtr(),
 			ok: true,
-			expectLog: `{
-  "str": "a",
-  "mstr": "*",
-  "int": 100,
-  "mint": "*",
-  "slice": [
-    "a"
-  ],
-  "mslice": "*",
-  "map": {
-    "a": "b"
-  },
-  "mmap": "*",
-  "struct": {
-    "mstr": "*",
-    "str": "a"
-  },
-  "mstruct": "*",
-  "pstruct": {
-    "mstr": "*",
-    "str": "a"
-  },
-  "mpstruct": "*",
-  "time":{"v":"2000-01-01T00:00:00Z"},
-  "mtime":"*",
-  "ptime":{"v":"2000-01-01T00:00:00Z"},
-  "mptime":"*",
-  "structs": [{"mstr": "*","str": "a"},{"mstr": "*","str": "b"}],
-  "mstructs": "*",
-  "pstructs": [{"mstr": "*","str": "a"},{"mstr": "*","str": "b"}],
-  "mpstructs": "*"
-}`,
-			expectJson: `{
-  "str": "a",
-  "mstr": "a",
-  "int": 100,
-  "mint": 100,
-  "slice": ["a"],
-  "mslice": ["a"],
-  "map": {"a": "b"},
-  "mmap": {"a": "b"},
-  "struct": {
-    "mstr": "a",
-    "str": "a"
-  },
-  "mstruct": {
-    "mstr": "a",
-    "str": "a"
-  },
-  "pstruct": {
-    "mstr": "a",
-    "str": "a"
-  },
-  "mpstruct": {
-    "mstr": "a",
-    "str": "a"
-  },
-  "time":"2000-01-01T00:00:00Z",
-  "mtime":"2000-01-01T00:00:00Z",
-  "ptime":"2000-01-01T00:00:00Z",
-  "mptime":"2000-01-01T00:00:00Z",
-  "structs": [{"mstr": "a","str": "a"},{"mstr": "b","str": "b"}],
-  "mstructs": [{"mstr": "a","str": "a"},{"mstr": "b","str": "b"}],
-  "pstructs": [{"mstr": "a","str": "a"},{"mstr": "b","str": "b"}],
-  "mpstructs": [{"mstr": "a","str": "a"},{"mstr": "b","str": "b"}]
-}`,
+			expectLog: expectMaskedStringInitMask,
+			expectJson: expectStringInitMask,
 		},
 		{
 			in:         "normal str",

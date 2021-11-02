@@ -2,7 +2,6 @@ package structtag_interface
 
 import (
 	"encoding/json"
-	"log"
 	"reflect"
 	"strings"
 	"time"
@@ -27,8 +26,6 @@ func MakeMaskedStruct(v interface{}) map[string]interface{} {
 	case reflect.Ptr:
 		rv = reflect.ValueOf(v).Elem()
 		rt = rt.Elem()
-	case reflect.Slice:
-		log.Println("slice")
 	}
 
 	if rt.Kind() != reflect.Struct {
