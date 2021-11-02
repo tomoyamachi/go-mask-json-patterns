@@ -2,6 +2,7 @@ package structtag_interface
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/tomoyamachi/go-mask-json-patterns/util"
 	"testing"
 	"time"
@@ -166,16 +167,22 @@ func TestMask(t *testing.T) {
 		expectJson string
 	}{
 		{
-			in: initMask(),
-			ok: true,
-			expectLog: expectMaskedStringInitMask,
+			in:         initMask(),
+			ok:         true,
+			expectLog:  expectMaskedStringInitMask,
 			expectJson: expectStringInitMask,
 		},
 		{
-			in: initMaskPtr(),
-			ok: true,
-			expectLog: expectMaskedStringInitMask,
+			in:         initMaskPtr(),
+			ok:         true,
+			expectLog:  expectMaskedStringInitMask,
 			expectJson: expectStringInitMask,
+		},
+		{
+			in:         []MaskResponse{initMask(), initMask()},
+			ok:         true,
+			expectLog:  fmt.Sprintf(`{"masked slice":[%s,%s]}`, expectMaskedStringInitMask, expectMaskedStringInitMask),
+			expectJson: fmt.Sprintf("[%s,%s]", expectStringInitMask, expectStringInitMask),
 		},
 		{
 			in:         "normal str",

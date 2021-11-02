@@ -26,6 +26,10 @@ func MakeMaskedStruct(v interface{}) map[string]interface{} {
 	case reflect.Ptr:
 		rv = reflect.ValueOf(v).Elem()
 		rt = rt.Elem()
+	case reflect.Slice:
+		rv = reflect.ValueOf(v)
+		result["masked slice"] = maskSlice(rv)
+		return result
 	}
 
 	if rt.Kind() != reflect.Struct {
@@ -66,20 +70,10 @@ func MakeMaskedStruct(v interface{}) map[string]interface{} {
 		}
 
 		switch ft.Type.Kind() {
-		case reflect.Ptr,reflect.Struct:
+		case reflect.Ptr, reflect.Struct:
 			result[jsonTag] = MakeMaskedStruct(fv.Interface())
 		case reflect.Slice:
-			val := []interface{}{}
-			for i := 0; i < fv.Len(); i++ {
-				inner := fv.Index(i)
-				switch inner.Kind() {
-				case reflect.Ptr, reflect.Struct:
-					val = append(val, MakeMaskedStruct(inner.Interface()))
-				default:
-					val = append(val, inner.Interface())
-				}
-			}
-			result[jsonTag] = val
+			result[jsonTag] = maskSlice(fv)
 		default:
 			if tagOptions.Contains("omitempty") && isEmptyValue(fv) {
 				continue
@@ -88,6 +82,20 @@ func MakeMaskedStruct(v interface{}) map[string]interface{} {
 		}
 	}
 	return result
+}
+
+func maskSlice(fv reflect.Value) []interface{} {
+	val := []interface{}{}
+	for i := 0; i < fv.Len(); i++ {
+		inner := fv.Index(i)
+		switch inner.Kind() {
+		case reflect.Ptr, reflect.Struct:
+			val = append(val, MakeMaskedStruct(inner.Interface()))
+		default:
+			val = append(val, inner.Interface())
+		}
+	}
+	return val
 }
 
 func isPrivateField(s string) bool {
