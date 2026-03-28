@@ -2,9 +2,27 @@ package originaltype
 
 import (
 	"encoding/json"
-	"github.com/tomoyamachi/go-mask-json-patterns/util"
 	"testing"
+
+	"github.com/tomoyamachi/go-mask-json-patterns/util"
 )
+
+// String()メソッドが常にマスク値を返すことを確認
+func TestString(t *testing.T) {
+	tests := []struct {
+		in     String
+		expect string
+	}{
+		{in: String("hello"), expect: util.Masked},
+		{in: String(""), expect: util.Masked},
+	}
+	for i, tt := range tests {
+		got := tt.in.String()
+		if got != tt.expect {
+			t.Errorf("test %d, String() = %q, want %q", i, got, tt.expect)
+		}
+	}
+}
 
 func TestMaskString(t *testing.T) {
 	type TestStruct struct {
@@ -23,6 +41,15 @@ func TestMaskString(t *testing.T) {
 				Normal: "nomask",
 			},
 			expect: `{"Mask":"***","Normal":"nomask"}`,
+			ok:     true,
+		},
+		{
+			// 空文字列でもマスクされることを確認
+			in: TestStruct{
+				Mask:   String(""),
+				Normal: "",
+			},
+			expect: `{"Mask":"***","Normal":""}`,
 			ok:     true,
 		},
 	}

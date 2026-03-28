@@ -3,9 +3,11 @@ package structtag_interface
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/tomoyamachi/go-mask-json-patterns/util"
+	"reflect"
 	"testing"
 	"time"
+
+	"github.com/tomoyamachi/go-mask-json-patterns/util"
 )
 
 type MaskResponse struct {
@@ -240,5 +242,142 @@ func TestMask(t *testing.T) {
 			}
 		}
 
+	}
+}
+
+// 非公開フィールド判定のテスト
+func TestIsPrivateField(t *testing.T) {
+	tests := []struct {
+		name   string
+		expect bool
+	}{
+		{name: "Name", expect: false},
+		{name: "name", expect: true},
+		{name: "", expect: true},
+		{name: "X", expect: false},
+		{name: "x", expect: true},
+	}
+	for i, tt := range tests {
+		got := isPrivateField(tt.name)
+		if got != tt.expect {
+			t.Errorf("test %d, isPrivateField(%q) = %v, want %v", i, tt.name, got, tt.expect)
+		}
+	}
+}
+
+// jsonタグ解析のテスト
+func TestParseTag(t *testing.T) {
+	tests := []struct {
+		tag        string
+		expectName string
+		expectOpts tagOptions
+	}{
+		{tag: "name,omitempty", expectName: "name", expectOpts: "omitempty"},
+		{tag: "name", expectName: "name", expectOpts: ""},
+		{tag: ",omitempty", expectName: "", expectOpts: "omitempty"},
+		{tag: "", expectName: "", expectOpts: ""},
+	}
+	for i, tt := range tests {
+		name, opts := parseTag(tt.tag)
+		if name != tt.expectName {
+			t.Errorf("test %d, parseTag(%q) name = %q, want %q", i, tt.tag, name, tt.expectName)
+		}
+		if opts != tt.expectOpts {
+			t.Errorf("test %d, parseTag(%q) opts = %q, want %q", i, tt.tag, opts, tt.expectOpts)
+		}
+	}
+}
+
+// tagOptions.Containsのテスト
+func TestTagOptions_Contains(t *testing.T) {
+	tests := []struct {
+		opts   tagOptions
+		name   string
+		expect bool
+	}{
+		{opts: "omitempty,string", name: "omitempty", expect: true},
+		{opts: "omitempty,string", name: "string", expect: true},
+		{opts: "omitempty,string", name: "missing", expect: false},
+		{opts: "", name: "anything", expect: false},
+		{opts: "omitempty", name: "omitempty", expect: true},
+	}
+	for i, tt := range tests {
+		got := tt.opts.Contains(tt.name)
+		if got != tt.expect {
+			t.Errorf("test %d, tagOptions(%q).Contains(%q) = %v, want %v", i, tt.opts, tt.name, got, tt.expect)
+		}
+	}
+}
+
+// 各型のゼロ値判定テスト
+func TestIsEmptyValue(t *testing.T) {
+	var nilPtr *int
+	nonNilPtr := new(int)
+	tests := []struct {
+		desc   string
+		val    any
+		expect bool
+	}{
+		{desc: "empty string", val: "", expect: true},
+		{desc: "non-empty string", val: "hello", expect: false},
+		{desc: "zero int", val: 0, expect: true},
+		{desc: "non-zero int", val: 42, expect: false},
+		{desc: "false bool", val: false, expect: true},
+		{desc: "true bool", val: true, expect: false},
+		{desc: "zero float", val: 0.0, expect: true},
+		{desc: "non-zero float", val: 1.5, expect: false},
+		{desc: "nil pointer", val: nilPtr, expect: true},
+		{desc: "non-nil pointer", val: nonNilPtr, expect: false},
+		{desc: "empty slice", val: []string{}, expect: true},
+		{desc: "non-empty slice", val: []string{"a"}, expect: false},
+	}
+	for _, tt := range tests {
+		got := isEmptyValue(reflect.ValueOf(tt.val))
+		if got != tt.expect {
+			t.Errorf("isEmptyValue(%s) = %v, want %v", tt.desc, got, tt.expect)
+		}
+	}
+}
+
+// checkSpecialStructのテスト
+func TestCheckSpecialStruct(t *testing.T) {
+	// time.Timeは特殊構造体として元の値を返す
+	tv := time.Now()
+	rv := reflect.ValueOf(tv)
+	got := checkSpecialStruct(rv)
+	if got == nil {
+		t.Error("checkSpecialStruct(time.Time) should return non-nil")
+	}
+
+	// 通常の構造体はnilを返す
+	sv := SubMask{Str: "a"}
+	rv2 := reflect.ValueOf(sv)
+	got2 := checkSpecialStruct(rv2)
+	if got2 != nil {
+		t.Errorf("checkSpecialStruct(SubMask) should return nil, got %v", got2)
+	}
+}
+
+// jsonタグなし構造体のテスト（フィールド名がキーとして使用される）
+func TestMakeMaskedStruct_NoJsonTags(t *testing.T) {
+	type NoTag struct {
+		Name   string
+		Secret string `log:"*"`
+	}
+	input := NoTag{Name: "visible", Secret: "hidden"}
+	result := MakeMaskedStruct(input)
+
+	b, err := json.Marshal(result)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	expect := `{"Name":"visible","Secret":"*"}`
+	ok, err := util.CompareJsonBytes(b, []byte(expect))
+	if err != nil {
+		t.Fatalf("unexpected error comparing JSON: %v", err)
+	}
+	if !ok {
+		t.Errorf("got %s, want %s", string(b), expect)
 	}
 }

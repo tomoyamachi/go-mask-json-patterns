@@ -2,8 +2,10 @@ package structtag_alias
 
 import (
 	"encoding/json"
-	"github.com/tomoyamachi/go-mask-json-patterns/util"
+	"strings"
 	"testing"
+
+	"github.com/tomoyamachi/go-mask-json-patterns/util"
 )
 
 func TestSensitive(t *testing.T) {
@@ -39,5 +41,14 @@ func TestSensitive(t *testing.T) {
 		if !ok {
 			t.Errorf("test %d, Marshal(%#v) = %s, want %s", i, tt.in, string(b), tt.expect)
 		}
+	}
+}
+
+// String()メソッドがEmailをマスクすることを確認
+func TestUser_String(t *testing.T) {
+	u := User{Id: 1, Name: "tomoya", Email: "test.com"}
+	got := u.String()
+	if strings.Contains(got, "test.com") {
+		t.Errorf("String() should mask email, got %s", got)
 	}
 }

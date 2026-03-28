@@ -53,6 +53,12 @@ func TestCompareJsonBytes(t *testing.T) {
 			b:      `{"bar":"1","foo":"1"}`,
 			hasErr: true,
 		},
+		{
+			// 第2引数が不正なJSON
+			a:      `{"bar":"1","foo":"1"}`,
+			b:      `invalid value`,
+			hasErr: true,
+		},
 	}
 	for i, tt := range tests {
 		ok, err := CompareJsonBytes([]byte(tt.a), []byte(tt.b))
