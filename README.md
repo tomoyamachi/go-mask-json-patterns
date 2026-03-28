@@ -1,5 +1,20 @@
 # go-mask-json-patterns
 
+A collection of patterns for masking sensitive fields in JSON output with Go.
+
+## Patterns
+
+| Package | Approach | Description |
+|---|---|---|
+| `structtag_interface` | Struct tag + reflection | Mask fields marked with `log:"*"` tag |
+| `structtag_alias` | Struct tag + alias type | Mask fields marked with `sensitive:"true"` tag |
+| `interfaces` | JSON key path | Mask fields in a JSON string by specifying key paths |
+| `override` | MarshalJSON/String override | Manually implement masking per struct |
+| `originaltype` | Custom type | Define a dedicated type that always masks its value |
+
+## Example (`structtag_interface`)
+
+### Struct Definition
 
 ```go
 type MaskResponse struct {
@@ -16,15 +31,16 @@ type MaskResponse struct {
 	PointerStruct     *SubMask          `json:"pstruct,omitempty"`
 	MaskPointerStruct *SubMask          `json:"mpstruct,omitempty" log:"*"`
 }
+
 type SubMask struct {
-Str     string `json:"str,omitempty"`
-MaskStr string `json:"mstr,omitempty" log:"*"`
+	Str     string `json:"str,omitempty"`
+	MaskStr string `json:"mstr,omitempty" log:"*"`
 }
 ```
 
+### Masked Output
 
-
-```go
+```json
 {
   "str": "a",
   "mstr": "*",
