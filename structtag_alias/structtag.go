@@ -21,8 +21,6 @@ func (u User) mask() interface{} {
 	sensitives := []string{}
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
-		// tag := field.Tag.Get(tagName)
-		// fmt.Printf("%d. %v (%v), val: %s tag: '%v'\n", i+1, field.Name, field.Type.Name(), t.String(), tag)
 		if field.Tag.Get(tagName) == "true" {
 			sensitives = append(sensitives, field.Name)
 		}
