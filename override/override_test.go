@@ -2,9 +2,11 @@ package override
 
 import (
 	"encoding/json"
-	"github.com/tomoyamachi/go-mask-json-patterns/util"
 	"reflect"
+	"strings"
 	"testing"
+
+	"github.com/tomoyamachi/go-mask-json-patterns/util"
 )
 
 func TestSample(t *testing.T) {
@@ -42,6 +44,13 @@ func TestSample(t *testing.T) {
 			expect: `{"a":"a","b":"***","c":"c"}`,
 			ok:     true,
 		},
+		{
+			// 空構造体でもBがマスクされることを確認
+			in:     Sample{},
+			spare:  Sample{},
+			expect: `{"a":"","b":"***","c":""}`,
+			ok:     true,
+		},
 	}
 	for i, tt := range tests {
 		b, err := json.Marshal(tt.in)
@@ -63,5 +72,21 @@ func TestSample(t *testing.T) {
 		if !reflect.DeepEqual(tt.in, tt.spare) {
 			t.Errorf("test %d, Override original structure", i)
 		}
+	}
+}
+
+// String()メソッドがBフィールドをマスクすることを確認
+func TestSample_String(t *testing.T) {
+	s := Sample{A: "a", B: "b", C: "c"}
+	got := s.String()
+	if strings.Contains(got, "b") && !strings.Contains(got, util.Masked) {
+		t.Errorf("String() should mask field B, got %s", got)
+	}
+	if !strings.Contains(got, util.Masked) {
+		t.Errorf("String() should contain masked value, got %s", got)
+	}
+	// 元の構造体が変更されていないことを確認
+	if s.B != "b" {
+		t.Errorf("original struct was mutated: B = %q", s.B)
 	}
 }
