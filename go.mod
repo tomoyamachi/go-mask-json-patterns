@@ -1,3 +1,3 @@
 module github.com/tomoyamachi/go-mask-json-patterns
 
-go 1.22
+go 1.26
